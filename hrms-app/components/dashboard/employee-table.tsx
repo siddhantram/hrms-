@@ -40,7 +40,7 @@ export function EmployeeTable() {
                 <td className="py-3 pr-6 text-slate-600">{employee.designation?.name ?? "-"}</td>
                 <td className="py-3">
                   <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700">
-                    {person.status}
+                    {employee.status}
                   </span>
                 </td>
               </tr>

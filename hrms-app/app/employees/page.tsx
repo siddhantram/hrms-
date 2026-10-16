@@ -70,13 +70,13 @@ export default function EmployeesPage() {
               {employees.map((employee) => (
                 <tr key={employee.id} className="border-t border-slate-200">
                   <td className="px-4 py-3 text-slate-600">{employee.employeeId}</td>
-                  <td className="px-4 py-3 font-medium text-slate-900">{employee.firstName} {employee.lastName}</td>
+                  <td className="px-4 py-3 font-medium text-slate-900"><Link href={`/employees/${employee.id}`} className="hover:underline">{employee.firstName} {employee.lastName}</Link></td>
                   <td className="px-4 py-3 text-slate-600">{employee.email}</td>
                   <td className="px-4 py-3 text-slate-600">{employee.department?.name ?? "-"}</td>
                   <td className="px-4 py-3 text-slate-600">{employee.designation?.name ?? "-"}</td>
                   <td className="px-4 py-3">
                     <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">
-                      {status}
+                      {employee.status.replaceAll("_", " ")}
                     </span>
                   </td>
                 </tr>

@@ -46,6 +46,32 @@ export async function PUT(
 
     const current = await prisma.employee.findFirst({ where: { id, companyId: access.session.companyId } });
     if (!current) return NextResponse.json({ error: "Employee not found" }, { status: 404 });
+    let departmentId = current.departmentId;
+    if (body.department !== undefined) {
+      if (body.department.trim()) {
+        const department = await prisma.department.upsert({
+          where: { companyId_name: { companyId: access.session.companyId, name: body.department.trim() } },
+          create: { companyId: access.session.companyId, name: body.department.trim() },
+          update: {},
+        });
+        departmentId = department.id;
+      } else {
+        departmentId = null;
+      }
+    }
+    let designationId = current.designationId;
+    if (body.designation !== undefined) {
+      if (body.designation.trim()) {
+        const designation = await prisma.designation.upsert({
+          where: { companyId_name: { companyId: access.session.companyId, name: body.designation.trim() } },
+          create: { companyId: access.session.companyId, name: body.designation.trim() },
+          update: {},
+        });
+        designationId = designation.id;
+      } else {
+        designationId = null;
+      }
+    }
     const employee = await prisma.employee.update({
       where: { id: current.id },
       data: {
@@ -56,10 +82,13 @@ export async function PUT(
         ...(body.phone !== undefined ? { phone: body.phone || null } : {}),
         ...(body.status ? { status: body.status } : {}),
         ...(body.joiningDate ? { joiningDate: new Date(body.joiningDate) } : {}),
+        ...(body.department !== undefined ? { departmentId } : {}),
+        ...(body.designation !== undefined ? { designationId } : {}),
         ...(body.salary !== undefined
           ? { salary: body.salary ? new Prisma.Decimal(body.salary) : null }
           : {}),
       },
+      include: { department: true, designation: true },
     });
     await prisma.activityLog.create({
       data: {
@@ -89,6 +118,16 @@ export async function DELETE(
   const { id } = await params;
   const employee = await prisma.employee.findFirst({ where: { id, companyId: access.session.companyId } });
   if (!employee) return NextResponse.json({ error: "Employee not found" }, { status: 404 });
+  const linkedRecords = await prisma.employee.findUnique({
+    where: { id: employee.id },
+    select: {
+      _count: { select: { attendances: true, leaves: true, payrolls: true, documents: true, performanceReviews: true, goals: true } },
+      userId: true,
+    },
+  });
+  if (linkedRecords && (linkedRecords.userId || Object.values(linkedRecords._count).some((count) => count > 0))) {
+    return NextResponse.json({ error: "Employees with linked account or history cannot be deleted. Set the status to inactive instead." }, { status: 409 });
+  }
   await prisma.employee.delete({ where: { id: employee.id } });
   await prisma.activityLog.create({
     data: { companyId: access.session.companyId, userId: access.session.userId, action: "EMPLOYEE_DELETED", entity: "Employee", entityId: employee.id },

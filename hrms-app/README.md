@@ -24,6 +24,10 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 
 To learn more about Next.js, take a look at the following resources:
 
+## Password reset setup
+
+The reset flow stores one-time, expiring token hashes in PostgreSQL and sends links through Resend. Set `EMAIL_API_KEY` to a Resend API key, `EMAIL_FROM` to a verified sender, and `NEXT_PUBLIC_APP_URL` to the public app origin. After pulling the schema change, run `npx prisma db push` before using password reset.
+
 - [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
 - [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 

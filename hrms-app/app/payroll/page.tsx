@@ -25,7 +25,7 @@ export default function PayrollPage() {
   const [working, setWorking] = useState(false);
   const [message, setMessage] = useState("");
   const [selectedEmployee, setSelectedEmployee] = useState("");
-  const [month, setMonth] = useState(new Date().toISOString().slice(0, 7));
+  const [month, setMonth] = useState("");
 
   const loadData = useCallback(async () => {
     const [payrollResponse, employeeResponse, sessionResponse] = await Promise.all([
@@ -46,7 +46,7 @@ export default function PayrollPage() {
     setLoading(false);
   }, []);
 
-  useEffect(() => { void loadData(); }, [loadData]);
+  useEffect(() => { void loadData().then(() => setMonth((current) => current || new Date().toISOString().slice(0, 7))); }, [loadData]);
 
   async function generatePayroll(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
